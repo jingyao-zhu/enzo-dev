@@ -65,7 +65,7 @@ LOCAL_HDF4_INSTALL    =
 LOCAL_HYPRE_INSTALL   = $(TACC_HYPRE_DIR)
 LOCAL_ACML_INSTALL    = 
 LOCAL_HDF5_INSTALL    = $(TACC_HDF5_DIR)
-LOCAL_GRACKLE_INSTALL = 
+LOCAL_GRACKLE_INSTALL = $(HOME)/local
 
 #-----------------------------------------------------------------------
 # Compiler settings
@@ -105,6 +105,11 @@ MACH_CXXFLAGS = -mp1 -prec_div -fp_port -align
 MACH_FFLAGS   = 
 MACH_F90FLAGS = -mp1 -prec_div -fp_port -align -save -zero
 MACH_LDFLAGS  = -lifcore -lifport -lpthread -ldl
+
+MACH_FFLAGS_INTEGER_32 = -i4
+MACH_FFLAGS_INTEGER_64 = -i8
+MACH_FFLAGS_REAL_32    = -r4
+MACH_FFLAGS_REAL_64    = -r8
 
 #-----------------------------------------------------------------------
 # Optimization flags
@@ -147,4 +152,5 @@ LOCAL_LIBS_MACH   = -lm
 MACH_LIBS         = $(LOCAL_LIBS_HDF5) $(LOCAL_LIBS_MACH) 
 MACH_LIBS_MPI     = $(LOCAL_LIBS_MPI)
 MACH_LIBS_HYPRE   = $(LOCAL_LIBS_HYPRE)
-MACH_LIBS_GRACKLE = $(LOCAL_LIBS_GRACKLE)
+MACH_LIBS_GRACKLE = $(LOCAL_LIBS_GRACKLE) #$(HOME)/local/lib
+#$(LOCAL_LIBS_GRACKLE)
