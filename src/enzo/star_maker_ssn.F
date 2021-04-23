@@ -7,7 +7,7 @@ c////////////////////////  SUBROUTINE STAR_MAKER \\\\\\\\\\\\\\\\\\\\\\\
 c
 
       subroutine star_maker_ssn(nx, ny, nz,
-     &     d, dm, temp, u, v, w, cooltime,
+     &     d, dm, temp, u, v, w,
      &     dt, r, metal, dx, t, z, procnum,
      &     d1, x1, v1, t1,
      &     nmax, xstart, ystart, zstart, ibuff,
@@ -30,7 +30,6 @@ c    d     - density field
 c    dm    - dark matter field
 c    temp  - temperature field
 c    u,v,w - velocity fields
-c    cooltime - cooling time in code units
 c    r     - refinement field (non-zero if zone is further refined)
 c    dt    - current timestep
 c    dx    - zone size (code units)
@@ -77,7 +76,7 @@ c
       R_PREC    metalSNII(nx,ny,nz)
       R_PREC    d(nx,ny,nz), dm(nx,ny,nz), temp(nx,ny,nz)
       R_PREC    u(nx,ny,nz), v(nx,ny,nz), w(nx,ny,nz)
-      R_PREC    r(nx,ny,nz), cooltime(nx,ny,nz), metal(nx,ny,nz)
+      R_PREC    r(nx,ny,nz), metal(nx,ny,nz)
       R_PREC    metalSNIa(nx,ny,nz)
       R_PREC    dt, dx, z
       R_PREC    d1, x1, v1, t1
@@ -97,13 +96,10 @@ c
       INTG_PREC  i, j, k, ii
       INTG_PREC, save :: ran1_init = 0
       R_PREC   div, tdyn, dtot
-      R_PREC   pi, G, sndspdC
+      R_PREC   sndspdC
       R_PREC   isosndsp2, starmass, starfraction, bmass, jeanmass
       R_PREC   random, pstar
-      real*8 msolar
-      parameter (pi=pi_val, G=GravConst,
-     &           sndspdC=1.3095e8_RKIND,
-     &           msolar=SolarMass)
+      parameter (sndspdC=1.3095e8_RKIND)
 c
       ii = np
 
@@ -143,11 +139,14 @@ c              2) Calculate useful intermediate values.
 c
 
                dtot = ( d(i,j,k) + dm(i,j,k) )*d1
-               tdyn  = sqrt(3._RKIND*pi/32._RKIND/G/dtot)/t1
-               bmass = d(i,j,k)*dble(d1)*dble(x1*dx)**3 / msolar
+               tdyn  = sqrt(3._RKIND*pi_val/32._RKIND/
+     &                      GravConst/dtot)/t1
+               bmass = d(i,j,k)*dble(d1)*dble(x1*dx)**3 / SolarMass
                isosndsp2 = sndspdC * temp(i,j,k)
-               jeanmass = pi/(6._RKIND*sqrt(d(i,j,k)*dble(d1))) *
-     &           dble(pi * isosndsp2 / G)**1.5_RKIND / msolar
+               jeanmass = pi_val/(6._RKIND*
+     &              sqrt(d(i,j,k)*dble(d1))) *
+     &              dble(pi_val * isosndsp2 /
+     &              GravConst)**1.5_RKIND / SolarMass
 
                if (jeanmass > bmass) then
                   goto 10
@@ -256,12 +255,12 @@ c
       subroutine star_feedback_ssn(nx, ny, nz,
      &                      d, dm, te, ge, u, v, w, metal,
      &                      idual, imetal, imethod, dt, r, dx, t, z,
-     &                      d1, x1, v1, t1, sn_param, retfr, yield,
+     &                      d1, x1, v1, t1, yield,
      &                      npart, xstart, ystart, zstart, ibuff, level,
      &                      xp, yp, zp, up, vp, wp,
      &                      mp, tdp, tcp, metalf, type,
      &                      explosionFlag,smthresh,
-     &                      willExplode, soonestExplosion, gam, mu,
+     &                      willExplode, soonestExplosion, mu,
      &                      te1, metalSNII,
      &                      metalfSNII, imetalSNII,
      &                      s49_tot, maxlevel,
@@ -309,9 +308,6 @@ c    tdp      - dynamical time of zone in which particle created
 c    tcp      - creation time of particle (-1 if not a star particle)
 c    metalf   - star particle metal fraction
 c    npart    - particle array size specified by calling routine
-c    sn_param - fraction of stellar rest mass that goes to feedback
-c    retfr     - fraction of mass ejected in winds [not used!].
-c               used to be m_eject
 c    yield    - fraction of stellar mass that is converted to metals
 c    type  - particle types (currently in the cell)
 c    s49_tot - the ionizing luminosity of the particle, in units
@@ -334,9 +330,9 @@ c
       R_PREC    u(nx,ny,nz), v(nx,ny,nz), w(nx,ny,nz)
       R_PREC    metal(nx,ny,nz), ge(nx,ny,nz)
       R_PREC    metalSNII(nx,ny,nz)
-      R_PREC    dt, dx, z, retfr
+      R_PREC    dt, dx, z
       R_PREC    d1, x1, v1, t1, smthresh
-      R_PREC    te1, gam, mu
+      R_PREC    te1, mu
       P_PREC xstart, ystart, zstart, t
       P_PREC xp(npart), yp(npart), zp(npart)
       R_PREC    up(npart), vp(npart), wp(npart)
@@ -357,15 +353,14 @@ c
 c  Locals
 c
       INTG_PREC i, j, k, n, coldWind, stepk, stepj, cellstep, ic, jc, kc
-      R_PREC mform, tfactor, clight, energy, sn_param,
+      R_PREC mform, tfactor, energy,
      &     m_eject, yield, minitial, xv1, xv2, dEject, ZSN,
      &     m_ejSN, dSN, td7, td7p2, td7p4, ionized, theDiff,
      &     logfac, alpha, num, stromgren_radius, stromgren_volume,
-     &     cell_volume, pi, mh, dEjectSN, year, xc, yc, zc, mc,
-     &     wind_energy, sn_energy, p_sn, radius, rx, ry, rz, msun, kms,
+     &     cell_volume, dEjectSN, year, xc, yc, zc, mc,
+     &     wind_energy, sn_energy, p_sn, radius, rx, ry, rz, kms,
      $     ex, ey, ez, px, py, pz, kesum, mv, pcell
-      parameter (clight = c_light, pi=pi_val,
-     &     mh=mass_h, year=3.15569d7, msun=SolarMass,
+      parameter (year=3.15569d7,
      &     kms=1d5)
       LOGICAL typ
 c
@@ -429,15 +424,17 @@ c
 c           Case B recombination, assuming T = 10^4 K.
             alpha = 2.60d-13 ! cm^3/s
 
-            num = d(i,j,k) * d1 / mu / mh
+            num = d(i,j,k) * d1 / mu / mass_h
             stromgren_radius = (
-     &           (3._RKIND*s49_tot(n)*1d49)/(4._RKIND*pi*alpha*num**2)
-     &           )**(1._RKIND/3._RKIND)
-            stromgren_volume =
-     &         (4._RKIND/3._RKIND)*pi*stromgren_radius**3
+     &           (3._RKIND*s49_tot(n)*1d49)/
+     &           (4._RKIND*pi_val*alpha*num**2)
+     &                          )**(1._RKIND/3._RKIND)
+            stromgren_volume = (4._RKIND/3._RKIND)*
+     &           pi_val*stromgren_radius**3
             cell_volume = dx*x1*dx*x1*dx*x1
 
-            ionized = kboltz*1e4 / mu / mh / x1**2 * t1**2
+            ionized = kboltz*1e4 / mu / mass_h /
+     &           x1**2 * t1**2
             if (stromgren_volume .le. cell_volume) then
                ionized = ionized * stromgren_volume/cell_volume
             endif
@@ -655,8 +652,8 @@ c     &         mp(n), xp(n),yp(n),zp(n),d(i,j,k),ge(i,j,k),
 c     &            te(i,j,k),wind_energy
             endif !! End of explosionFlag>0
 
-            dEjectSN = m_ejSN * 1.989d33 / (dx*x1)**3 / d1
-            dEject = m_eject * 1.989d33 / (dx*x1)**3 / d1
+            dEjectSN = m_ejSN * SolarMass / (dx*x1)**3 / d1
+            dEject = m_eject * SolarMass / (dx*x1)**3 / d1
 
             if((dEject + dEjectSN) .gt. mp(n)) then
                 write(6,*) 'WARNING: losing too much mass'
@@ -795,7 +792,7 @@ c
 c          Find momentum to deposit per SNe in code units.
 c
 
-           p_sn = explosionFlag(n) * 3d5 * msun / (d1*x1**3) * 
+           p_sn = explosionFlag(n) * 3d5 * SolarMass / (d1*x1**3) * 
      &      kms / v1 / (distcells - 1)
 
 c          Approximate that the explosion happens in the center of the
@@ -859,21 +856,15 @@ c                         from the SNe
 
 c                         Limit maximum velocity boost to 1000 km/s
 
-                          if ((pcell/mc) .gt. mv) then
+                          if ((p_sn/mc) .gt. mv) then
                              pcell = mc*mv
                           endif
 
 c                         Add momentum feedback
 
                           u(ic,jc,kc) = u(ic,jc,kc) + (rx*pcell)/mc
-c                          u(ic,jc,kc) = sign(min(abs(u(ic,jc,kc)), mv),
-c     &                                       u(ic,jc,kx))
                           v(ic,jc,kc) = v(ic,jc,kc) + (ry*pcell)/mc
-c                          v(ic,jc,kc) = sign(min(abs(v(ic,jc,kc)), mv),
-c     &                                       v(ic,jc,kx))
                           w(ic,jc,kc) = w(ic,jc,kc) + (rz*pcell)/mc
-c                          w(ic,jc,kc) = sign(min(abs(w(ic,jc,kc)), mv),
-c     &                                       w(ic,jc,kx))
 
                           if (imethod .ne. 2 .and. idual .eq. 1) then
                              te(ic,jc,kc) = ge(ic,jc,kc) + 0.5_RKIND*(
