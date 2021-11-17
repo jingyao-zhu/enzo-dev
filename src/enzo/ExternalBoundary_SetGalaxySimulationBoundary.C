@@ -231,9 +231,9 @@ int ExternalBoundary::SetGalaxySimulationBoundary(FLOAT time)
 						ICMTotalEnergyTable[f_index] = temperature/TemperatureUnits/((Gamma-1.0)*0.6);
 
 						if (HydroMethod != 2) {
-							ICMTotalEnergyTable[f_index] += 0.5*(   pow(ICMVelocityXTable[0],2)
-							                                      + pow(ICMVelocityYTable[1],2)
-							                                      + pow(ICMVelocityZTable[2],2));
+							ICMTotalEnergyTable[f_index] += 0.5*(   pow(ICMVelocityXTable[f_index],2)
+							                                      + pow(ICMVelocityYTable[f_index],2)
+							                                      + pow(ICMVelocityZTable[f_index],2));
 						}
 
 						f_index++;
@@ -296,14 +296,14 @@ int ExternalBoundary::SetGalaxySimulationBoundary(FLOAT time)
 					BoundaryValue[Vel3Num][dim][0][index] = t_ratio*ICMVelocityZTable[i1]
 						                                      + (1.0-t_ratio)*ICMVelocityZTable[i2];
                                 if (DualEnergyFormalism)
-                                  BoundaryValue[GENum][dim][0][index] = BoundaryValue[TENum][dim][0][index];
-                                if (HydroMethod != Zeus_Hydro)
+				  //                                  BoundaryValue[GENum][dim][0][index] = BoundaryValue[TENum][dim][0][index];
+				  //                                if (HydroMethod != Zeus_Hydro)
                                   if (BoundaryRank == 1)
-                                    BoundaryValue[TENum][dim][0][index] += 0.5*POW(BoundaryValue[Vel1Num][dim][0][index],2);
+                                    BoundaryValue[GENum][dim][0][index] = BoundaryValue[TENum][dim][0][index] - 0.5*POW(BoundaryValue[Vel1Num][dim][0][index],2);
                                   if (BoundaryRank > 1)
-				    BoundaryValue[TENum][dim][0][index] += 0.5*(POW(BoundaryValue[Vel1Num][dim][0][index],2) + POW(BoundaryValue[Vel2Num][dim][0][index],2));
+				    BoundaryValue[GENum][dim][0][index] = BoundaryValue[TENum][dim][0][index] - 0.5*(POW(BoundaryValue[Vel1Num][dim][0][index],2) + POW(BoundaryValue[Vel2Num][dim][0][index],2));
 				  if (BoundaryRank > 2)
-				    BoundaryValue[TENum][dim][0][index] += 0.5*(POW(BoundaryValue[Vel1Num][dim][0][index],2) + POW(BoundaryValue[Vel2Num][dim][0][index],2)+ POW(BoundaryValue[Vel3Num][dim][0][index],2));
+				    BoundaryValue[GENum][dim][0][index] = BoundaryValue[TENum][dim][0][index] - 0.5*(POW(BoundaryValue[Vel1Num][dim][0][index],2) + POW(BoundaryValue[Vel2Num][dim][0][index],2)+ POW(BoundaryValue[Vel3Num][dim][0][index],2));
 				// update RPS Wind Vector for time delay calc
 				if( index == 0.0 ){
 					GalaxySimulationRPSWindVelocity[0] = BoundaryValue[Vel1Num][dim][0][index];
