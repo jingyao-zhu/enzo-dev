@@ -388,9 +388,11 @@ c
             if (i .lt. 1 .or. i .gt. nx .or. 
      &          j .lt. 1 .or. j .gt. ny .or.
      &          k .lt. 1 .or. k .gt. nz) then
-               write(6,*) 'star particle out of grid; i,j,k,level,',
-     &                     i,j,k,level
-               ERROR_MESSAGE
+                write(6,*) 'star particle out of grid; 
+     &          n, metalf, creation time, i,j,k,level,'
+     &          ,n,metalf(n),tcp(n),i,j,k,level
+c               ERROR_MESSAGE
+                goto 100
             endif
 
 c
