@@ -337,7 +337,7 @@ int ExternalBoundary::SetGalaxySimulationBoundary(FLOAT time)
 		  }
 		}
 		if( UseMetallicityField )
-		  BoundaryValue[MetalNum][dim][0][index] = 0.3 * BoundaryValue[DensNum][dim][0][index] * CoolData.SolarMetalFractionByMass; //1.0e-10;
+		  BoundaryValue[MetalNum][dim][0][index] = 0.1 * BoundaryValue[DensNum][dim][0][index] * CoolData.SolarMetalFractionByMass; //1.0e-10;
 
 		if( BoundaryValue[DensNum][dim][0][index] < 0.0 ) 
 			ENZO_FAIL("Error in ExternalBoundary_SetGalaxyBoundary: Negative Density");

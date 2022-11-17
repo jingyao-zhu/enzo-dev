@@ -222,7 +222,7 @@ int grid::GalaxySimulationInitializeGrid(FLOAT DiskRadius,
 
    if (UseMetallicityField) {
     for (i = 0; i < size; i++)
-      BaryonField[MetalNum][i] = 0.3 * UniformDensity * CoolData.SolarMetalFractionByMass; /*1e-10;*/
+      BaryonField[MetalNum][i] = 0.1 * UniformDensity * CoolData.SolarMetalFractionByMass; /*1e-10;*/
  }
   /* set Multiphase species to ICM values */
 
@@ -408,7 +408,7 @@ int grid::GalaxySimulationInitializeGrid(FLOAT DiskRadius,
 	    if( temperature > 1.0e7 )
 	      temperature = init_temp;
 	    if( UseMetallicityField ) // This should be converted to a general color field at some point - this obviously breaks metallicity feature
-	      BaryonField[MetalNum][n] = 1.0 * density * CoolData.SolarMetalFractionByMass;
+	      BaryonField[MetalNum][n] = 0.3 * density * CoolData.SolarMetalFractionByMass;
 	  }
 
 	} // end: if (r < DiskRadius)
